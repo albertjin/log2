@@ -24,8 +24,8 @@ type stdLogger struct {
 
 func (sl *stdLogger) Output(debug bool, skip int, a []interface{}) {
     if debug || ((len(a) > 0) && (a[0] == Critical)) {
-        skip += 2
-        sl.logger.Output(skip, strings.Join(Strings(a, skip), " "))
+        skip++
+        sl.logger.Output(skip+1, strings.Join(Strings(a, skip), " "))
     }
 }
 
@@ -40,6 +40,11 @@ func NewStdLogger(prefix interface{}) Logger {
         }
     }
 
-    p, _ := prefix.(string)
+    p, ok := prefix.(string)
+    if !ok {
+        if q, ok := prefix.(interface{String() string}); ok {
+            p = q.String()
+        }
+    }
     return &stdLogger{log.New(os.Stdout, p, log.Ldate | log.Ltime | log.Lshortfile)}
 }
